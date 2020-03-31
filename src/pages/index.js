@@ -1,21 +1,70 @@
 import React from "react"
-import { Link } from "gatsby"
+import { Link, graphql } from "gatsby"
+import styled from "styled-components"
 
 import Layout from "../components/layout"
-import Image from "../components/image"
 import SEO from "../components/seo"
 
-const IndexPage = () => (
-  <Layout>
-    <SEO title="Home" />
-    <h1>Hi people</h1>
-    <p>Welcome to your new Gatsby site.</p>
-    <p>Now go build something great.</p>
-    <div style={{ maxWidth: `300px`, marginBottom: `1.45rem` }}>
-      <Image />
-    </div>
-    <Link to="/page-2/">Go to page 2</Link>
-  </Layout>
-)
+// we give styling to link components from Gatsby
+const BlogLink = styled(Link)`
+  text-decoration: none;
+`
 
-export default IndexPage
+const BlogTitle = styled.h3`
+  margin-bottom: 7px;
+  color: black;
+`
+
+const BlogSubTitle = styled.h5`
+  margin-bottom: 10px;
+  color: black;
+`
+
+const BlogExcerpt = styled.p`
+  margin-bottom: 30px;
+`
+
+export default ({ data }) => {
+  return (
+    <Layout>
+      <SEO title="Home" />
+      <h1>{data.allMarkdownRemark.totalCount}</h1>
+      {data.allMarkdownRemark.edges.map(({ node }) => (
+        <div key={node.id}>
+          <BlogLink to={node.fields.slug}>
+            <BlogTitle>{node.frontmatter.title}</BlogTitle>
+            <BlogSubTitle>
+              {node.frontmatter.date} • {node.timeToRead} minute read
+            </BlogSubTitle>
+            <BlogExcerpt>{node.excerpt}</BlogExcerpt>
+          </BlogLink>
+        </div>
+      ))}
+      <Link to="/page-2/">next</Link>
+    </Layout>
+  )
+}
+
+// export default IndexPage
+
+export const query = graphql`
+  query {
+    allMarkdownRemark(sort: { fields: frontmatter___date, order: DESC }) {
+      edges {
+        node {
+          fields {
+            slug
+          }
+          id
+          html
+          timeToRead
+          frontmatter {
+            date
+            title
+          }
+          excerpt
+        }
+      }
+    }
+  }
+`
